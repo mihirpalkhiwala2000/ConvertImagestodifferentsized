@@ -4,6 +4,7 @@ const express = require("express");
 const sharp = require("sharp");
 const app = express();
 const PORT = 3000;
+const admz = require("adm-zip");
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -28,7 +29,8 @@ app.use(
 app.get("/", (req, res) => {
   return res.render("homepage");
 });
-
+let images = [];
+let resizedImage;
 app.post("/resize", upload.array("files", 1), async (req, res) => {
   try {
     if (!req.files) {
@@ -37,6 +39,7 @@ app.post("/resize", upload.array("files", 1), async (req, res) => {
     let width;
     let height;
     let type;
+    const images = [];
     for (let i = 0; i < 3; i++) {
       if (i === 0) {
         width = 92;
@@ -53,17 +56,44 @@ app.post("/resize", upload.array("files", 1), async (req, res) => {
         height = 1080;
         type = "Large";
       }
-      await sharp(req.files[0].path)
+      resizedImage = await sharp(req.files[0].path)
         .rotate()
         .resize(width, height)
         .jpeg({ mozjpeg: true })
         .toFile(`./convertedimages/${type}${req.files[0].filename}`);
-    }
 
-    res.send("Converted Images");
+      images.push(
+        __dirname + `/convertedimages/${type}${req.files[0].filename}`
+      );
+    }
+    const zp = new admz();
+
+    for (let k = 0; k < images.length; k++) {
+      zp.addLocalFile(images[k]);
+    }
+    const file_after_download = "resizedImages.zip";
+
+    const data = zp.toBuffer();
+
+    res.set("Content-Type", "application/octet-stream");
+    res.set(
+      "Content-Disposition",
+      `attachment; filename=${file_after_download}`
+    );
+    // res.set("Content-Length", data.length);
+    res.send(data);
+
+    // res.sendFile(images[0]);
+    // res.sendFile(
+    //   __dirname + `/convertedimages/${type}${req.files[0].filename}`,
+    //   __dirname + `/convertedimages/${type}${req.files[0].filename}`
+    // );
+    // res.setHeader("Content-type", "image/jpeg");
+    // res.setHeader("Content-Disposition", "attachment");
+    // res.setHeader("Content-Disposition", "attachment");
   } catch (e) {
-    console.log("hiii");
-    res.send(e);
+    console.log("hiii", e.message);
+    res.send(e.message);
   }
 });
 
