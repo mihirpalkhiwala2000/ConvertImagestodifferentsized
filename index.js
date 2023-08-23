@@ -80,17 +80,7 @@ app.post("/resize", upload.array("files", 1), async (req, res) => {
       "Content-Disposition",
       `attachment; filename=${file_after_download}`
     );
-    // res.set("Content-Length", data.length);
     res.send(data);
-
-    // res.sendFile(images[0]);
-    // res.sendFile(
-    //   __dirname + `/convertedimages/${type}${req.files[0].filename}`,
-    //   __dirname + `/convertedimages/${type}${req.files[0].filename}`
-    // );
-    // res.setHeader("Content-type", "image/jpeg");
-    // res.setHeader("Content-Disposition", "attachment");
-    // res.setHeader("Content-Disposition", "attachment");
   } catch (e) {
     console.log("hiii", e.message);
     res.send(e.message);
