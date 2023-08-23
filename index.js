@@ -34,15 +34,32 @@ app.post("/resize", upload.array("files", 1), async (req, res) => {
     if (!req.files) {
       throw Error("No files selected");
     }
-    for (let i = 1; i < 4; i++) {
+    let width;
+    let height;
+    let type;
+    for (let i = 0; i < 3; i++) {
+      if (i === 0) {
+        width = 92;
+        height = 92;
+        type = "Thumbnail";
+      }
+      if (i === 1) {
+        width = 1080;
+        height = 1080;
+        type = "Medium";
+      }
+      if (i === 2) {
+        width = 1920;
+        height = 1080;
+        type = "Large";
+      }
       await sharp(req.files[0].path)
         .rotate()
-        .resize(i * 600)
-        .jpeg()
-        .toFile(
-          `./convertedimages/${i * 600}pixels${req.files[0].originalname}`
-        );
+        .resize(width, height)
+        .jpeg({ mozjpeg: true })
+        .toFile(`./convertedimages/${type}${req.files[0].filename}`);
     }
+
     res.send("Converted Images");
   } catch (e) {
     console.log("hiii");
